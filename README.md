@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Система поиска компаний
 
-## Getting Started
+Веб-приложение для поиска компаний с возможностью фильтрации по различным критериям и поиска по естественному языку.
 
-First, run the development server:
+## Функциональность
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Авторизация
+- При первом посещении сайта появляется модальное окно для входа
+- Возможность регистрации новых пользователей
+- Автоматическое перенаправление авторизованных пользователей на страницу поиска
+- Сохранение состояния авторизации
+
+### Поиск компаний
+Система предоставляет два режима поиска:
+
+#### 1. Фильтр
+- Поиск по названию города
+- Поиск по коду ОКВЭД
+- Поиск по названию организации
+- Предпросмотр результатов (ограничен 20 записями)
+
+#### 2. Промпт
+- Поиск по описанию на естественном языке
+- Интеграция с n8n для обработки промптов
+- Отправка промпта и ID пользователя на внешний сервис
+
+### История запросов
+- Просмотр всех предыдущих запросов пользователя
+- Статусы выполнения запросов
+- Возможность скачивания результатов
+
+## Технические детали
+
+### Стек технологий
+- **Frontend**: Next.js, React
+- **Backend**: Supabase (PostgreSQL, Auth)
+- **Стили**: CSS modules
+- **Интеграция**: n8n webhooks
+
+### Структура страниц
+- `/` - Главная страница с модальным окном авторизации
+- `/login` - Страница входа (резервная)
+- `/register` - Страница регистрации (резервная)
+- `/query` - Основная страница поиска
+- `/dashboard` - История запросов пользователя
+
+### Переменные окружения
+Создайте файл `.env.local` с следующими переменными:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_N8N_WEBHOOK_URL=your_n8n_webhook_url
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Установка и запуск
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+1. Установите зависимости:
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Настройте переменные окружения в `.env.local`
 
-## Learn More
+3. Запустите приложение:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Откройте http://localhost:3000 в браузере
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Структура базы данных
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Таблица companies
+- `id` - уникальный идентификатор
+- `inn` - ИНН компании
+- `name` - название компании
+- `city` - город
+- `okved` - код ОКВЭД
+- `region` - регион
 
-## Deploy on Vercel
+### Таблица requests
+- `id` - уникальный идентификатор
+- `user_id` - ID пользователя
+- `prompt` - текст промпта
+- `filters` - JSON с фильтрами
+- `status` - статус выполнения
+- `file_url` - ссылка на результат
+- `created_at` - дата создания
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API endpoints
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### n8n Integration
+POST запрос на webhook с данными:
+```json
+{
+  "prompt": "текст промпта",
+  "userId": "id_пользователя"
+}
+```
